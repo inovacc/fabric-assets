@@ -1,0 +1,36 @@
+use std::net::SocketAddr;
+use std::path::PathBuf;
+
+use super::BoxError;
+
+pub struct Config {
+    pub bind_address: SocketAddr,
+    pub database_url: String,
+    pub probe_mode: bool,
+    pub ready_file: Option<PathBuf>,
+    pub shutdown_file: Option<PathBuf>,
+}
+
+impl Config {
+    pub fn from_env() -> Result<Self, BoxError> {
+        let bind_address = std::env::var("FABRIC_BIND_ADDR")
+            .unwrap_or_else(|_| "127.0.0.1:8080".to_owned())
+            .parse()?;
+        let database_url = std::env::var("FABRIC_DATABASE_URL")
+            .unwrap_or_else(|_| "sqlite://fabric.db?mode=rwc".to_owned());
+        let probe_mode = match std::env::var("FABRIC_PROBE_MODE").as_deref() {
+            Ok("1" | "true") => true,
+            Ok("0" | "false") | Err(_) => false,
+            Ok(value) => return Err(format!("FABRIC_PROBE_MODE has invalid value {value:?}").into()),
+        };
+        let ready_file = std::env::var_os("FABRIC_READY_FILE").map(PathBuf::from);
+        let shutdown_file = std::env::var_os("FABRIC_SHUTDOWN_FILE").map(PathBuf::from);
+        Ok(Self {
+            bind_address,
+            database_url,
+            probe_mode,
+            ready_file,
+            shutdown_file,
+        })
+    }
+}

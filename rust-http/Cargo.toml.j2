@@ -1,0 +1,19 @@
+[package]
+name = "{{project_name}}"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+axum = "={{axum_version}}"
+opentelemetry = { version = "={{opentelemetry_version}}", features = ["trace"] }
+opentelemetry-stdout = { version = "={{opentelemetry_stdout_version}}", features = ["trace"] }
+opentelemetry_sdk = { version = "={{opentelemetry_sdk_version}}", features = ["trace"] }
+serde = { version = "={{serde_version}}", features = ["derive"] }
+serde_json = "={{serde_json_version}}"
+sqlx = { version = "={{sqlx_version}}", default-features = false, features = ["runtime-tokio", "sqlite", "migrate", "macros"] }
+tokio = { version = "={{tokio_version}}", features = ["fs", "macros", "net", "rt-multi-thread", "signal", "time"] }
+tower = "={{tower_version}}"
+tracing = "={{tracing_version}}"
+tracing-opentelemetry = "={{tracing_opentelemetry_version}}"
+tracing-subscriber = { version = "={{tracing_subscriber_version}}", features = ["env-filter", "fmt"] }

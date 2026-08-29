@@ -1,0 +1,25 @@
+mod config;
+mod database;
+mod http;
+mod lifecycle;
+mod probe;
+mod telemetry;
+
+pub use http::AppState;
+
+type BoxError = Box<dyn std::error::Error + Send + Sync>;
+
+pub async fn run() -> Result<(), BoxError> {
+    let config = config::Config::from_env()?;
+    let telemetry = telemetry::Telemetry::init("{{project_name}}")?;
+    let pool = database::connect_and_migrate(&config.database_url).await?;
+    let state = AppState { pool };
+    let router = http::router(config.probe_mode)
+        .merge(crate::app::routes())
+        .with_state(state);
+
+    lifecycle::serve(&config, router).await?;
+    telemetry.shutdown()?;
+    Ok(())
+}
+

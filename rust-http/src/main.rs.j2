@@ -1,0 +1,11 @@
+mod app;
+mod fabric_generated;
+
+#[tokio::main]
+async fn main() {
+    if let Err(error) = fabric_generated::run().await {
+        eprintln!("service failed: {error}");
+        std::process::exit(1);
+    }
+}
+

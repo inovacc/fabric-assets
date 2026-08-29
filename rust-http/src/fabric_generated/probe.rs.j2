@@ -1,0 +1,59 @@
+use axum::extract::{Path, State};
+use axum::http::StatusCode;
+use axum::routing::{get, post};
+use axum::{Json, Router};
+use serde::{Deserialize, Serialize};
+
+use super::http::{AppState, Problem};
+
+#[derive(Deserialize)]
+pub struct CreateRecord {
+    name: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Record {
+    id: i64,
+    name: String,
+}
+
+pub fn router() -> Router<AppState> {
+    Router::new()
+        .route("/__fabric/probe/records", post(create))
+        .route("/__fabric/probe/records/{id}", get(read))
+}
+
+async fn create(
+    State(state): State<AppState>,
+    Json(request): Json<CreateRecord>,
+) -> Result<(StatusCode, Json<Record>), Problem> {
+    let result = sqlx::query("INSERT INTO fabric_probe_records (name) VALUES (?)")
+        .bind(&request.name)
+        .execute(&state.pool)
+        .await
+        .map_err(Problem::internal)?;
+    let record = Record {
+        id: result.last_insert_rowid(),
+        name: request.name,
+    };
+    Ok((StatusCode::CREATED, Json(record)))
+}
+
+async fn read(
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+) -> Result<Json<Record>, Problem> {
+    let row = sqlx::query_as::<_, (i64, String)>(
+        "SELECT id, name FROM fabric_probe_records WHERE id = ?",
+    )
+    .bind(id)
+    .fetch_optional(&state.pool)
+    .await
+    .map_err(Problem::internal)?
+    .ok_or_else(Problem::not_found)?;
+    Ok(Json(Record {
+        id: row.0,
+        name: row.1,
+    }))
+}
+

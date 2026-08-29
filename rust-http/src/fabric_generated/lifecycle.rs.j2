@@ -1,0 +1,57 @@
+use std::net::SocketAddr;
+use std::path::Path;
+
+use axum::Router;
+use serde::Serialize;
+use tokio::net::TcpListener;
+
+use super::config::Config;
+use super::BoxError;
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ReadyArtifact {
+    schema_version: u32,
+    address: SocketAddr,
+}
+
+pub async fn serve(config: &Config, router: Router) -> Result<(), BoxError> {
+    let listener = TcpListener::bind(config.bind_address).await?;
+    let address = listener.local_addr()?;
+    if let Some(path) = &config.ready_file {
+        write_ready_file(path, address).await?;
+    }
+    tracing::info!(%address, "service ready");
+    axum::serve(listener, router)
+        .with_graceful_shutdown(shutdown_signal(config.shutdown_file.clone()))
+        .await?;
+    Ok(())
+}
+
+async fn write_ready_file(path: &Path, address: SocketAddr) -> Result<(), BoxError> {
+    if let Some(parent) = path.parent() {
+        tokio::fs::create_dir_all(parent).await?;
+    }
+    let temporary = path.with_extension("tmp");
+    let mut bytes = serde_json::to_vec(&ReadyArtifact {
+        schema_version: 1,
+        address,
+    })?;
+    bytes.push(b'\n');
+    tokio::fs::write(&temporary, bytes).await?;
+    tokio::fs::rename(temporary, path).await?;
+    Ok(())
+}
+
+async fn shutdown_signal(shutdown_file: Option<std::path::PathBuf>) {
+    if let Some(path) = shutdown_file {
+        loop {
+            if path.is_file() {
+                return;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(25)).await;
+        }
+    } else if let Err(error) = tokio::signal::ctrl_c().await {
+        tracing::error!(%error, "failed to install shutdown signal");
+    }
+}

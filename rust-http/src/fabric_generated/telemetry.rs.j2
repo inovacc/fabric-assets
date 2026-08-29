@@ -1,0 +1,31 @@
+use opentelemetry::trace::TracerProvider as _;
+use opentelemetry_sdk::trace::SdkTracerProvider;
+use tracing_subscriber::layer::SubscriberExt as _;
+use tracing_subscriber::util::SubscriberInitExt as _;
+
+use super::BoxError;
+
+pub struct Telemetry {
+    provider: SdkTracerProvider,
+}
+
+impl Telemetry {
+    pub fn init(service_name: &'static str) -> Result<Self, BoxError> {
+        let exporter = opentelemetry_stdout::SpanExporter::default();
+        let provider = SdkTracerProvider::builder()
+            .with_simple_exporter(exporter)
+            .build();
+        let tracer = provider.tracer(service_name);
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::fmt::layer().with_target(false))
+            .with(tracing_opentelemetry::layer().with_tracer(tracer))
+            .try_init()?;
+        Ok(Self { provider })
+    }
+
+    pub fn shutdown(self) -> Result<(), BoxError> {
+        self.provider.shutdown()?;
+        Ok(())
+    }
+}
+
