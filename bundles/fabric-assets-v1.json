@@ -1,0 +1,20 @@
+{
+  "contractVersion": "fabric-assets/v1",
+  "bundleId": "fabric-assets-v1",
+  "bundleVersion": "1.0.0",
+  "supportedFabric": ">=0.1.0 <0.2.0",
+  "manifestDigest": "9f5f513e2aea851bbdc6f7f2ff51228a03a1d757dfd04d05ee25d0992c1190e3",
+  "dependencies": [
+    {"id": "spring-web", "version": "3.5.0"},
+    {"id": "spring-validation", "version": "3.5.0"},
+    {"id": "spring-actuator", "version": "3.5.0"},
+    {"id": "spring-data-jpa", "version": "3.5.0"},
+    {"id": "spring-h2", "version": "2.3.232"},
+    {"id": "spring-postgresql", "version": "42.7.5"},
+    {"id": "spring-lombok", "version": "1.18.36"},
+    {"id": "dotnet-openapi", "version": "10.0.0"},
+    {"id": "efcore-sqlite", "version": "10.0.0"},
+    {"id": "efcore-postgresql", "version": "10.0.0"}
+  ],
+  "templates": []
+}

@@ -1,0 +1,6 @@
+{
+  "sources": [
+    {"name": "Spring Initializr", "url": "https://start.spring.io/metadata/client", "retrievedAt": "2026-08-29T00:00:00Z"},
+    {"name": ".NET SDK templates", "url": "https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-new-sdk-templates", "retrievedAt": "2026-08-29T00:00:00Z"}
+  ]
+}

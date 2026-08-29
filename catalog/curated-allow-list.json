@@ -1,0 +1,24 @@
+{
+  "contractVersion": "fabric-assets/v1",
+  "dependencyIds": [
+    "spring-web",
+    "spring-validation",
+    "spring-actuator",
+    "spring-data-jpa",
+    "spring-h2",
+    "spring-postgresql",
+    "spring-lombok",
+    "dotnet-openapi",
+    "efcore-sqlite",
+    "efcore-postgresql"
+  ],
+  "renderTokens": [
+    "projectName",
+    "groupId",
+    "artifactId",
+    "packageName",
+    "namespace",
+    "persistence",
+    "port"
+  ]
+}
